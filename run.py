@@ -2,7 +2,7 @@ import os
 import yaml
 from os import walk
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageEnhance
 from progress import printProgressBar
 
 
@@ -15,6 +15,7 @@ SOURCE_HEIGHT = 1080
 X_SPEED = 7
 VIDS_ON_SCREEN = 3
 VIDS_HEIGHT = 300
+HORIZONTAL_GAP = 30
 
 def video_to_pics(filename):
     pass
@@ -44,9 +45,18 @@ class MiniVid:
         self.__y = 0 
         self.__start_frame = vid_settings.get('start',1)
         self.__end_frame = vid_settings.get('end',self.count_all_frames())
-        print('{} end frame {}'.format(name,self.__end_frame))
+        self.__brightness = vid_settings.get('brightness',0)
+        # print('{} end frame {}'.format(name,self.__end_frame))
         self.__current_frame_num = 0
         self.__run_direction = 1
+        self.calculate_width()
+        print('{} width {}'.format(name,self.__width))
+  
+    def calculate_width(self):
+        img = Image.open(self.get_frame_path(self.__start_frame))
+        wpercent = (VIDS_HEIGHT/float(img.size[1]))
+        self.__width = int((float(img.size[0])*float(wpercent))) 
+               
 
     def count_all_frames(self):
         onlyfiles = next(os.walk(self.__frames_folder))[2] #dir is your directory path as string
@@ -61,6 +71,9 @@ class MiniVid:
 
     def y(self):
         return self.__y
+
+    def width(self):
+        return self.__width
 
     def put(self):
         pass
@@ -82,9 +95,13 @@ class MiniVid:
 
     def get_frame_image(self):
         img = Image.open(self.get_frame_path(self.__current_frame_num))
-        wpercent = (VIDS_HEIGHT/float(img.size[1]))
-        width = int((float(img.size[0])*float(wpercent)))
-        frame_image = img.resize((width,VIDS_HEIGHT), Image.ANTIALIAS)
+        # wpercent = (VIDS_HEIGHT/float(img.size[1]))
+        # width = int((float(img.size[0])*float(wpercent)))
+        frame_image = img.resize((self.__width,VIDS_HEIGHT), Image.ANTIALIAS)
+        if self.__brightness!=0:
+            enhancer = ImageEnhance.Brightness(frame_image)
+            frame_image = enhancer.enhance(1.8)
+ 
         return frame_image
 
 
@@ -96,21 +113,26 @@ def create_show(data):
     Path(OUT_FRAMES_FOLDER).mkdir(parents=True, exist_ok=True)
     vids = []
     counter = 0
+    offset = SOURCE_WIDTH
     for name in order:
         vid_settings = vids_data.get(name,{})
         new_vid = MiniVid(name,vid_settings)
-        new_vid.place(SOURCE_WIDTH + counter*300,700)
+        new_vid.place(offset,700)
         vids.append(new_vid)
         counter += 1
+        offset = offset + new_vid.width()+HORIZONTAL_GAP
 
-    total_frames = 500
+    total_frames = int(offset/X_SPEED)+10
 
     printProgressBar(0, total_frames, prefix = 'Progress:', suffix = 'Complete', length = 50)
+
+    background = Image.open('images/green_back.png')
 
     for frame_number in range(1,total_frames):
         # print (frame_number)
         printProgressBar(frame_number, total_frames, prefix = 'Progress:', suffix = 'Complete', length = 50)
         dst = Image.new('RGB', (SOURCE_WIDTH, SOURCE_HEIGHT))
+        dst.paste(background,(0,0))
         for vid in vids:
             if vid.move(): 
                 dst.paste(vid.get_frame_image(), (vid.x(), vid.y()))
@@ -121,6 +143,7 @@ def create_show(data):
 
 def encode():
     # os.system('ffmpeg -y -start_number 1 -i out/frame%05d.jpg -c:v mpeg4 -vf fps=30 -crf 1 out.avi')
+    # os.system('ffmpeg -y -start_number 1 -i out/frame%05d.jpg -vcodec libx264 -profile:v main -level 3.1 -preset veryslow -crf 18 -x264-params ref=4 -movflags +faststart out.mp4')
     os.system('ffmpeg -y -start_number 1 -i out/frame%05d.jpg -vcodec libx264 -profile:v main -level 3.1 -preset medium -crf 18 -x264-params ref=4 -movflags +faststart out.mp4')
 
 
@@ -130,9 +153,7 @@ prepare_videos(VIDS_FOLDER)
 with open('vids.yaml') as f:
     
     data = yaml.load(f, Loader=yaml.FullLoader)
-    # print(data)
-    # print(order)
-    #create_show(data)
+    create_show(data)
     encode()
 #ffmpeg -start_number 1 -i frame%05d.jpg -vcodec mpeg4 test.avi
 

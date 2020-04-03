@@ -1,12 +1,15 @@
 order: !!python/tuple
 - gorod
+- grigoriev
 - chemezov
 - pastor
+- druzhinin
 - masha
 - ruslan
+- mastugin
 vids:
   chemezov:
-    start: 346
+    start: 150
     end: 530
   gorod:
     start: 15
@@ -14,3 +17,5 @@ vids:
   ruslan:
     start: 28
     end: 800
+  druzhinin:
+    brightness: 1.8  
