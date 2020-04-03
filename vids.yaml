@@ -1,0 +1,16 @@
+order: !!python/tuple
+- gorod
+- chemezov
+- pastor
+- masha
+- ruslan
+vids:
+  chemezov:
+    start: 346
+    end: 530
+  gorod:
+    start: 15
+    end: 234
+  ruslan:
+    start: 28
+    end: 800
