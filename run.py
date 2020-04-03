@@ -103,7 +103,7 @@ def create_show(data):
         vids.append(new_vid)
         counter += 1
 
-    total_frames = 550
+    total_frames = 500
 
     printProgressBar(0, total_frames, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
@@ -120,7 +120,8 @@ def create_show(data):
         dst.save(os.path.join(OUT_FRAMES_FOLDER,filename))   
 
 def encode():
-    os.system('ffmpeg -y -start_number 1 -i out/frame%05d.jpg -c:v libx264 -vf fps=30 -crf 1 out.avi')
+    # os.system('ffmpeg -y -start_number 1 -i out/frame%05d.jpg -c:v mpeg4 -vf fps=30 -crf 1 out.avi')
+    os.system('ffmpeg -y -start_number 1 -i out/frame%05d.jpg -vcodec libx264 -profile:v main -level 3.1 -preset medium -crf 18 -x264-params ref=4 -movflags +faststart out.mp4')
 
 
 print('start')
@@ -131,7 +132,7 @@ with open('vids.yaml') as f:
     data = yaml.load(f, Loader=yaml.FullLoader)
     # print(data)
     # print(order)
-    create_show(data)
+    #create_show(data)
     encode()
 #ffmpeg -start_number 1 -i frame%05d.jpg -vcodec mpeg4 test.avi
 
