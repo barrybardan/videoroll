@@ -2,11 +2,11 @@ order: !!python/tuple
 - gorod
 - grigoriev
 - chemezov
+- ruslan
 - pastor
 - druzhinin
 - masha
 - borya
-- ruslan
 - mastugin
 vids:
   chemezov:

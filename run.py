@@ -126,10 +126,28 @@ class VidDecoration(VideoObject):
         wpercent = (self._height/float(img.size[1]))
         self._width = int((float(img.size[0])*float(wpercent)))
         self.tile = img.resize((self._width,self._height), Image.ANTIALIAS)
+        self.create_frames()
+
+    def create_frames(self):
+        self.number_of_frames = 5
+        self.frames = []
+        one_box_width = (self._tile_ratio*self._width)/5
+        for counter in range(0,self.number_of_frames):
+            frame =  Image.new('RGB', (self._width, self._height)) 
+            offset =  int(-one_box_width/self.number_of_frames*counter)
+            frame.paste(self.tile,(offset,0)) 
+            frame.paste(self.tile,(int(self._tile_ratio*self._width+offset),0)) 
+
+            self.frames.append(frame)  
+        self.current_frame_num = 0    
 
     def draw(self,dst):
+        self.current_frame_num +=1
+        if self.current_frame_num == self.number_of_frames:
+            self.current_frame_num = 0
         for counter in range(0,self.number_of_tiles):
-            dst.paste(self.tile, (int(self._x+counter*self._tile_ratio*self._width), self._y))
+            frame = self.frames[self.current_frame_num]
+            dst.paste(frame, (int(self._x+counter*self._tile_ratio*self._width), self._y))
 
     def calculate_length(self,width_in_pixels):
         self.number_of_tiles = ceil(width_in_pixels/(self._width*self._tile_ratio))
