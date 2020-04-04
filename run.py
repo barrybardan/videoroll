@@ -1,5 +1,6 @@
 import os
 import yaml
+from math import ceil
 from os import walk
 from pathlib import Path
 from PIL import Image, ImageEnhance
@@ -16,6 +17,8 @@ X_SPEED = 7
 VIDS_ON_SCREEN = 3
 VIDS_HEIGHT = 300
 HORIZONTAL_GAP = 30
+POS_Y = 725
+DECOR_RATIO = 1.4
 
 def video_to_pics(filename):
     pass
@@ -37,59 +40,69 @@ def prepare_videos(path):
 def zero_format(number):
     return "{:05d}".format(number)
 
-class MiniVid:    
+class VideoObject:
+    def __init__(self):
+        self._x = 0
+        self._y = 0 
+        self._run_direction = 1
+  
+    def place(self,x,y):
+        self._x = int(x)
+        self._y = int(y)
+
+    def x(self):
+        return self._x
+
+    def y(self):
+        return self._y
+
+    def move(self):
+        self._x -= X_SPEED
+
+
+
+class MiniVid(VideoObject):    
     def __init__(self, name, vid_settings):
-        self.__name = name
-        self.__frames_folder = os.path.join(IN_FRAMES_FOLDER, name)
-        self.__x = 0
-        self.__y = 0 
-        self.__start_frame = vid_settings.get('start',1)
-        self.__end_frame = vid_settings.get('end',self.count_all_frames())
-        self.__brightness = vid_settings.get('brightness',0)
-        # print('{} end frame {}'.format(name,self.__end_frame))
+        super().__init__()
+        self._name = name
+        self._frames_folder = os.path.join(IN_FRAMES_FOLDER, name)
+        self._start_frame = vid_settings.get('start',1)
+        self._end_frame = vid_settings.get('end',self.count_all_frames())
+        self._brightness = vid_settings.get('brightness',0)
+        # print('{} end frame {}'.format(name,self._end_frame))
         self.__current_frame_num = 0
-        self.__run_direction = 1
         self.calculate_width()
-        print('{} width {}'.format(name,self.__width))
+        print('{} width {}'.format(name,self._width))
   
     def calculate_width(self):
-        img = Image.open(self.get_frame_path(self.__start_frame))
+        img = Image.open(self.get_frame_path(self._start_frame))
         wpercent = (VIDS_HEIGHT/float(img.size[1]))
-        self.__width = int((float(img.size[0])*float(wpercent))) 
+        self._width = int((float(img.size[0])*float(wpercent))) 
                
 
     def count_all_frames(self):
-        onlyfiles = next(os.walk(self.__frames_folder))[2] #dir is your directory path as string
+        onlyfiles = next(os.walk(self._frames_folder))[2] #dir is your directory path as string
         return len(onlyfiles)-1
 
-    def place(self,x,y):
-        self.__x = x
-        self.__y = y
-
-    def x(self):
-        return self.__x
-
-    def y(self):
-        return self.__y
-
     def width(self):
-        return self.__width
+        return self._width
 
     def put(self):
         pass
 
     def get_frame_path(self, number):
-        frame_filename = 'frame{}.jpg'.format(zero_format(self.__start_frame+number))
-        return os.path.join(self.__frames_folder,frame_filename)
+        frame_filename = 'frame{}.jpg'.format(zero_format(self._start_frame+number))
+        return os.path.join(self._frames_folder,frame_filename)
         
     def move(self):
-        self.__x -= X_SPEED
-        if self.__x <= SOURCE_WIDTH:
-            self.__current_frame_num += self.__run_direction
+        super().move() 
+
+        if (self._x <= SOURCE_WIDTH)and(self._x >= -self._width):
+            self.__current_frame_num += self._run_direction
             if self.__current_frame_num == 1:
-                self.__run_direction = 1
-            if self.__current_frame_num == self.__end_frame - self.__start_frame:
-                self.__run_direction = -1
+                self._run_direction = 1
+            if self.__current_frame_num == self._end_frame - self._start_frame:
+                self._run_direction = -1
             return True
         return False    
 
@@ -97,42 +110,69 @@ class MiniVid:
         img = Image.open(self.get_frame_path(self.__current_frame_num))
         # wpercent = (VIDS_HEIGHT/float(img.size[1]))
         # width = int((float(img.size[0])*float(wpercent)))
-        frame_image = img.resize((self.__width,VIDS_HEIGHT), Image.ANTIALIAS)
-        if self.__brightness!=0:
+        frame_image = img.resize((self._width,VIDS_HEIGHT), Image.ANTIALIAS)
+        if self._brightness!=0:
             enhancer = ImageEnhance.Brightness(frame_image)
             frame_image = enhancer.enhance(1.8)
  
         return frame_image
 
+class VidDecoration(VideoObject):
+    def __init__(self):
+        super().__init__() 
+        img = Image.open('images/film2.png')
+        self._tile_ratio = 0.96
+        self._height = int(VIDS_HEIGHT*DECOR_RATIO)  
+        wpercent = (self._height/float(img.size[1]))
+        self._width = int((float(img.size[0])*float(wpercent)))
+        self.tile = img.resize((self._width,self._height), Image.ANTIALIAS)
 
+    def draw(self,dst):
+        for counter in range(0,self.number_of_tiles):
+            dst.paste(self.tile, (int(self._x+counter*self._tile_ratio*self._width), self._y))
+
+    def calculate_length(self,width_in_pixels):
+        self.number_of_tiles = ceil(width_in_pixels/(self._width*self._tile_ratio))
 
 def create_show(data):
     order = data.get('order')
     vids_data = data.get('vids')
     # print(order)
     Path(OUT_FRAMES_FOLDER).mkdir(parents=True, exist_ok=True)
+
+    decor = VidDecoration()
+
     vids = []
     counter = 0
-    offset = SOURCE_WIDTH
+    offset = SOURCE_WIDTH+HORIZONTAL_GAP
     for name in order:
         vid_settings = vids_data.get(name,{})
         new_vid = MiniVid(name,vid_settings)
-        new_vid.place(offset,700)
+        new_vid.place(offset,POS_Y)
         vids.append(new_vid)
         counter += 1
         offset = offset + new_vid.width()+HORIZONTAL_GAP
+
+    decor.calculate_length(offset-SOURCE_WIDTH)
 
     total_frames = int(offset/X_SPEED)+10
 
     printProgressBar(0, total_frames, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
-    background = Image.open('images/green_back.png')
+    # background = Image.open('images/green_back.png')
+    background = Image.open('images/bg_real.png')
+    
+    decor.place(SOURCE_WIDTH,POS_Y-(VIDS_HEIGHT*(DECOR_RATIO-1)/2))
 
     for frame_number in range(1,total_frames):
         # print (frame_number)
         printProgressBar(frame_number, total_frames, prefix = 'Progress:', suffix = 'Complete', length = 50)
         dst = Image.new('RGB', (SOURCE_WIDTH, SOURCE_HEIGHT))
         dst.paste(background,(0,0))
+
+        decor.move()
+        decor.draw(dst)
+
         for vid in vids:
             if vid.move(): 
                 dst.paste(vid.get_frame_image(), (vid.x(), vid.y()))

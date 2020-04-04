@@ -5,6 +5,7 @@ order: !!python/tuple
 - pastor
 - druzhinin
 - masha
+- borya
 - ruslan
 - mastugin
 vids:
@@ -17,5 +18,8 @@ vids:
   ruslan:
     start: 28
     end: 800
+  borya:
+    start: 170
+    end: 440
   druzhinin:
     brightness: 1.8  
