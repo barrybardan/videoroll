@@ -1,0 +1,3 @@
+certifi==2019.11.28
+Pillow==7.1.1
+PyYAML==5.3.1

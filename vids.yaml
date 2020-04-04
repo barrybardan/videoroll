@@ -1,11 +1,21 @@
 order: !!python/tuple
 - gorod
 - grigoriev
-- chemezov
 - ruslan
+- matveeva
 - pastor
 - druzhinin
 - masha
+- tipisev
+- aksenova
+- vasiliev
+- suslina
+- chizhik
+- domanskaya
+- chemezov
+- mihalevkin
+- peluhova
+- titov
 - borya
 - mastugin
 vids:
@@ -23,3 +33,6 @@ vids:
     end: 440
   druzhinin:
     brightness: 1.8  
+  chizhik:
+    start: 10
+    end: 340    
