@@ -1,19 +1,27 @@
 order: !!python/tuple
-- gorod
 - grigoriev
+- chirtzov
 - ruslan
 - matveeva
 - pastor
 - druzhinin
 - masha
 - tipisev
+- mihalevkin
+- filonenko
+- minenok
 - aksenova
+- buslov
 - vasiliev
+- gorod
+- krukov
+- kolesnikov
 - suslina
 - chizhik
 - domanskaya
 - chemezov
-- mihalevkin
+- nadolinsky
+- ludi
 - peluhova
 - titov
 - borya
@@ -35,4 +43,13 @@ vids:
     brightness: 1.8  
   chizhik:
     start: 10
-    end: 340    
+    end: 340
+  buslov:
+    start: 90  
+  peluhova:
+    start: 30
+    end: 144    
+  filonenko:
+    start: 95
+  minenok:
+    start: 95  
