@@ -11,14 +11,18 @@ order: !!python/tuple
 - filonenko
 - minenok
 - aksenova
+- filipenko
 - buslov
+- bashlov
 - vasiliev
 - gorod
 - krukov
 - kolesnikov
 - suslina
+- smirnov
 - chizhik
 - domanskaya
+- petr
 - chemezov
 - nadolinsky
 - ludi
@@ -44,12 +48,19 @@ vids:
   chizhik:
     start: 10
     end: 340
+    brightness: 1.8 
   buslov:
     start: 90  
   peluhova:
     start: 30
-    end: 144    
+    end: 110    
   filonenko:
     start: 95
   minenok:
-    start: 95  
+    start: 105
+  chirtzov:
+    start: 60 
+  smirnov:
+    start: 1
+    end: 2
+    still: True     

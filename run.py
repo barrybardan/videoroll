@@ -70,6 +70,7 @@ class MiniVid(VideoObject):
         self._end_frame = vid_settings.get('end',self.count_all_frames())
         self._brightness = vid_settings.get('brightness',0)
         # print('{} end frame {}'.format(name,self._end_frame))
+        self.is_still = vid_settings.get('still',False)
         self.__current_frame_num = 0
         self.calculate_width()
         print('{} width {}'.format(name,self._width))
@@ -98,10 +99,13 @@ class MiniVid(VideoObject):
         super().move() 
 
         if (self._x <= SOURCE_WIDTH)and(self._x >= -self._width):
-            self.__current_frame_num += self._run_direction
-            if self.__current_frame_num == 1:
+            
+            if not self.is_still:
+                self.__current_frame_num += self._run_direction
+
+            if self.__current_frame_num <= 1:
                 self._run_direction = 1
-            if self.__current_frame_num == self._end_frame - self._start_frame:
+            if self.__current_frame_num >= self._end_frame - self._start_frame:
                 self._run_direction = -1
             return True
         return False    
