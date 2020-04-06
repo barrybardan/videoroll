@@ -206,7 +206,8 @@ def create_show(data):
 def encode():
     # os.system('ffmpeg -y -start_number 1 -i out/frame%05d.jpg -c:v mpeg4 -vf fps=30 -crf 1 out.avi')
     # os.system('ffmpeg -y -start_number 1 -i out/frame%05d.jpg -vcodec libx264 -profile:v main -level 3.1 -preset veryslow -crf 18 -x264-params ref=4 -movflags +faststart out.mp4')
-    os.system('ffmpeg -y -start_number 1 -i out/frame%05d.jpg -vcodec libx264 -profile:v main -level 3.1 -preset medium -crf 18 -x264-params ref=4 -movflags +faststart out.mp4')
+    # os.system('ffmpeg -y -start_number 1 -i out/frame%05d.jpg -vcodec libx264 -profile:v main -level 3.1 -preset medium -crf 18 -x264-params ref=4 -movflags +faststart out.mp4')
+    os.system('ffmpeg -y -framerate 30 -start_number 1 -i out/frame%05d.jpg -vcodec libx264 -profile:v main -level 3.1 -preset medium -crf 18 -x264-params ref=4 -movflags +faststart out.mp4')
 
 
 print('start')

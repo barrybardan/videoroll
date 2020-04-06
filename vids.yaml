@@ -6,6 +6,7 @@ order: !!python/tuple
 - pastor
 - druzhinin
 - masha
+- blago
 - tipisev
 - mihalevkin
 - filonenko
@@ -49,17 +50,19 @@ vids:
     start: 10
     end: 340
     brightness: 1.8 
+  blago:
+    start: 130
   buslov:
     start: 90  
   peluhova:
-    start: 30
-    end: 110    
+    start: 50
+    end: 130    
   filonenko:
     start: 95
   minenok:
     start: 105
   chirtzov:
-    start: 60 
+    start: 120 
   smirnov:
     start: 1
     end: 2
