@@ -34,7 +34,8 @@ def prepare_videos(path):
             frames_folder = os.path.join(IN_FRAMES_FOLDER,filename)
             if not os.path.exists(frames_folder):
                 Path(frames_folder).mkdir(parents=True, exist_ok=True)
-                ff_command = 'ffmpeg -i {0} {1}/frame%05d.jpg'.format(path_to_file,frames_folder)
+                
+                ff_command = 'ffmpeg -i {0} -qscale:v 2 {1}/frame%05d.jpg'.format(path_to_file,frames_folder)
                 os.system(ff_command)
 
 def zero_format(number):
@@ -131,6 +132,8 @@ class VidDecoration(VideoObject):
         self._width = int((float(img.size[0])*float(wpercent)))
         self.tile = img.resize((self._width,self._height), Image.ANTIALIAS)
         self.create_frames()
+        self.line = Image.open('images/line.png')
+        self.line = self.line.resize((45,self._height), Image.ANTIALIAS)
 
     def create_frames(self):
         self.number_of_frames = 5
@@ -152,9 +155,18 @@ class VidDecoration(VideoObject):
         for counter in range(0,self.number_of_tiles):
             frame = self.frames[self.current_frame_num]
             dst.paste(frame, (int(self._x+counter*self._tile_ratio*self._width), self._y))
+        dst.paste(self.line, (int(self._x+self.number_of_tiles*self._tile_ratio*self._width), self._y))
 
     def calculate_length(self,width_in_pixels):
-        self.number_of_tiles = ceil(width_in_pixels/(self._width*self._tile_ratio))
+        self.number_of_tiles = ceil(width_in_pixels/(self._width*self._tile_ratio))-1
+
+
+def get_background_frame(number):  
+
+    frame_filename = 'frame{}.jpg'.format(zero_format(number))
+    full_file_name = os.path.join('frames/track1',frame_filename)
+    img = Image.open(full_file_name)
+    return img
 
 def create_show(data):
     order = data.get('order')
@@ -163,6 +175,7 @@ def create_show(data):
     Path(OUT_FRAMES_FOLDER).mkdir(parents=True, exist_ok=True)
 
     decor = VidDecoration()
+
 
     vids = []
     counter = 0
@@ -178,26 +191,30 @@ def create_show(data):
     decor.calculate_length(offset-SOURCE_WIDTH)
 
     total_frames = int(offset/X_SPEED)+10
+    bg_frames = 7392
+    start_show_at = 6600-total_frames
 
+    print('total frames {}'.format(total_frames))
     printProgressBar(0, total_frames, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
-    # background = Image.open('images/green_back.png')
-    background = Image.open('images/bg_real.png')
+    background = Image.open('images/green_back.png')
+    # background = Image.open('images/bg_real.png')
     
     decor.place(SOURCE_WIDTH,POS_Y-(VIDS_HEIGHT*(DECOR_RATIO-1)/2))
 
-    for frame_number in range(1,total_frames):
+    for frame_number in range(1,bg_frames):
         # print (frame_number)
-        printProgressBar(frame_number, total_frames, prefix = 'Progress:', suffix = 'Complete', length = 50)
+        printProgressBar(frame_number, bg_frames, prefix = 'Progress:', suffix = 'Complete', length = 50)
         dst = Image.new('RGB', (SOURCE_WIDTH, SOURCE_HEIGHT))
-        dst.paste(background,(0,0))
+        dst.paste(get_background_frame(frame_number),(0,0))
+        # dst.paste(background,(0,0))
 
-        decor.move()
-        decor.draw(dst)
-
-        for vid in vids:
-            if vid.move(): 
-                dst.paste(vid.get_frame_image(), (vid.x(), vid.y()))
+        if (frame_number>=start_show_at)and(frame_number<start_show_at+total_frames):
+            decor.move()
+            decor.draw(dst)
+            for vid in vids:
+                if vid.move(): 
+                    dst.paste(vid.get_frame_image(), (vid.x(), vid.y()))
            #print('x:{} y:{}'.format(vid.x(), vid.y()))
 
         filename = 'frame{}.jpg'.format(zero_format(frame_number))   
@@ -207,7 +224,8 @@ def encode():
     # os.system('ffmpeg -y -start_number 1 -i out/frame%05d.jpg -c:v mpeg4 -vf fps=30 -crf 1 out.avi')
     # os.system('ffmpeg -y -start_number 1 -i out/frame%05d.jpg -vcodec libx264 -profile:v main -level 3.1 -preset veryslow -crf 18 -x264-params ref=4 -movflags +faststart out.mp4')
     # os.system('ffmpeg -y -start_number 1 -i out/frame%05d.jpg -vcodec libx264 -profile:v main -level 3.1 -preset medium -crf 18 -x264-params ref=4 -movflags +faststart out.mp4')
-    os.system('ffmpeg -y -framerate 30 -start_number 1 -i out/frame%05d.jpg -vcodec libx264 -profile:v main -level 3.1 -preset medium -crf 18 -x264-params ref=4 -movflags +faststart out.mp4')
+    # os.system('ffmpeg -y -framerate 30 -start_number 5100 -i out/frame%05d.jpg -vcodec libx264 -profile:v main -level 3.1 -preset medium -crf 18 -x264-params ref=4 -movflags +faststart out.mp4')
+    os.system('ffmpeg -y -framerate 29.977898 -start_number 1 -i out/frame%05d.jpg -i audio.aac -vcodec libx264 -profile:v main -level 3.1 -preset slow -crf 18 -x264-params ref=4 -movflags +faststart out.mp4')
 
 
 print('start')
